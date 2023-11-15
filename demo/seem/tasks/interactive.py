@@ -31,12 +31,13 @@ transform = transforms.Compose(t)
 metadata = MetadataCatalog.get('coco_2017_train_panoptic')
 all_classes = [name.replace('-other','').replace('-merged','') for name in COCO_PANOPTIC_CLASSES] + ["others"]
 colors_list = [(np.array(color['color'])/255).tolist() for color in COCO_CATEGORIES] + [[1, 1, 1]]
-
+# Deformable Transformer Encoder is not available.
 def interactive_infer_image(model, audio_model, image, tasks, refimg=None, reftxt=None, audio_pth=None, video_pth=None):
     image_ori = transform(image['image'])
     mask_ori = image['mask']
     width = image_ori.size[0]
     height = image_ori.size[1]
+    print(1)
     image_ori = np.asarray(image_ori)
     visual = Visualizer(image_ori, metadata=metadata)
     images = torch.from_numpy(image_ori.copy()).permute(2,0,1).cuda()
@@ -53,7 +54,7 @@ def interactive_infer_image(model, audio_model, image, tasks, refimg=None, reftx
     model.model.task_switch['visual'] = False
     model.model.task_switch['grounding'] = False
     model.model.task_switch['audio'] = False
-
+    print(2)
     example = None
     if 'Example' in tasks:
         model.model.task_switch['visual'] = True
