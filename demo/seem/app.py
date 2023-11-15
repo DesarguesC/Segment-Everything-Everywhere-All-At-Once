@@ -128,7 +128,12 @@ Instructions:
 '''
 
 article = "The Demo is Run on SEEM-Tiny."
-inputs = [ImageMask(label="[Stroke] Draw on Image",type="pil"), gr.inputs.CheckboxGroup(choices=["Stroke", "Example", "Text", "Audio", "Video", "Panoptic"], type="value", label="Interative Mode"), ImageMask(label="[Example] Draw on Referring Image",type="pil"), gr.Textbox(label="[Text] Referring Text"), gr.Audio(label="[Audio] Referring Audio", source="microphone", type="filepath"), gr.Video(label="[Video] Referring Video Segmentation",format="mp4",interactive=True)]
+inputs = [ImageMask(label="[Stroke] Draw on Image",type="pil"),
+            gr.inputs.CheckboxGroup(choices=["Stroke", "Example", "Text", "Audio", "Video", "Panoptic"],
+            type="value", label="Interative Mode"), ImageMask(label="[Example] Draw on Referring Image",type="pil"),
+            gr.Textbox(label="[Text] Referring Text"), gr.Audio(label="[Audio] Referring Audio", source="microphone", type="filepath"),
+            gr.Video(label="[Video] Referring Video Segmentation",format="mp4",interactive=True)]
+
 gr.Interface(
     fn=inference,
     inputs=inputs,
