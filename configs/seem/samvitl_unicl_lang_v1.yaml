@@ -8,13 +8,17 @@
 # Define Test/Trainer/Saving
 PIPELINE: XDecoderPipeline
 TRAINER: xdecoder
-SAVE_DIR: '../../data/output/test'
+SAVE_DIR: '../data/output/test'     #  test image folder
 base_path: "./"
 
 # Resume Logistic
 RESUME: false
 WEIGHT: false
-RESUME_FROM: ''
+
+# useless?
+RESUME_FROM: '../autodl-tmp/'   # model weights base path    ||    .eval -> load model simultaneously
+# model usage:  ./trainer/xdecoder_trainer.py (class XDecoder_Trainer) => ./trainer/default_trainer.py （father class DefaultTrainer）
+# _eval_on_set: self.pipeline.evaluate_model
 EVAL_AT_START: false
 
 # Logging and Debug
@@ -53,7 +57,7 @@ MODEL:
     AUTOGRESSIVE: True
   BACKBONE:
     NAME: vit
-    PRETRAINED: '/nobackup3/xueyan-data/grin_data/output/sam/sam_vit_l_0b3195.pth'
+    PRETRAINED: '../autodl-tmp/sam_vit_l_0b3195.pth'    # SAM model path
     LOAD_PRETRAINED: true
     VIT:
       SIZE: "large"
