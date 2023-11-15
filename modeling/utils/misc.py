@@ -207,6 +207,8 @@ def get_class_names(name):
         return BDD_PANO + ["background"]
     elif 'vlp' in name:
         return ["background"]
+    elif 'imagenet' in name:
+        return IMAGENET_CLASSES + ['background']
     else:
         assert False, "text dataset name {} is not defined".format(name)
 

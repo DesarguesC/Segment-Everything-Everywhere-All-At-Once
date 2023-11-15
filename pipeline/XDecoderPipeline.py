@@ -117,79 +117,83 @@ class XDecoderPipeline:
         scores = {}
         summary = {}
 
-        for dataset_label in dataset_names:
-            torch.cuda.empty_cache()
-            eval_batch_gen = self.get_dataloaders(trainer, dataset_label, is_evaluation=True)
-            self.evaluator.reset()
-            with torch.no_grad():
-                names = get_class_names(dataset_label)
-                model.model.metadata = MetadataCatalog.get(dataset_label)
-                model.model.metadata = hook_metadata(model.model.metadata, dataset_label)
-                eval_type = model.model.metadata.evaluator_type
-                if 'background' in names:
-                    model.model.sem_seg_head.num_classes = len(names) - 1
-                model.model.sem_seg_head.predictor.lang_encoder.get_text_embeddings(names, is_eval=True)
-                hook_switcher(model, dataset_label)
-                total = len(eval_batch_gen)
-                num_warmup = min(5, total - 1)
-                start_time = time.perf_counter()
+        torch.cuda.empty_cache()
+        label = 'imagenet_val'
+        eval_batch_gen = self.get_dataloaders(trainer, label, is_evaluation=True)
+        self.evaluator.reset()
+        with torch.no_grad():
+            names = get_class_names(label)
+            model.model.metadata = MetadataCatalog.get(label)
+            model.model.metadata = hook_metadata(model.model.metadata, label)
+            eval_type = model.model.metadata.evaluator_type
+
+            model.model.sem_seg_head.predictor.lang_encoder.get_text_embeddings(names, is_eval=True)
+            hook_switcher(model, label)
+            total = len(eval_batch_gen)
+            num_warmup = min(5, total - 1)
+            start_time = time.perf_counter()
+            total_data_time = 0
+            total_compute_time = 0
+            total_eval_time = 0
+            start_data_time = time.perf_counter()
+            idx = 0
+            batch =
+            for idx, batch in enumerate(eval_batch_gen):
+
+                total_data_time += time.perf_counter() - start_data_time
+                if idx == num_warmup:
+                    start_time = time.perf_counter()
                 total_data_time = 0
                 total_compute_time = 0
                 total_eval_time = 0
+
+                start_compute_time = time.perf_counter()
+                batch = move_batch_to_device(batch, self._opt['device'])
+                if self._opt['FP16']:
+                    # in FP16 mode, DeepSpeed casts the model to FP16, so the input needs to be manually casted to FP16
+                    batch = cast_batch_to_half(batch)
+
+                outputs = model(batch, mode=eval_type)
+
+                if torch.cuda.is_available():
+                    torch.cuda.synchronize()
+
+                total_compute_time += time.perf_counter() - start_compute_time
+                start_eval_time = time.perf_counter()
+
+                self.evaluator.process(batch, outputs)
+                total_eval_time += time.perf_counter() - start_eval_time
+
+                iters_after_start = idx + 1 - num_warmup * int(idx >= num_warmup)
+                data_seconds_per_iter = total_data_time / iters_after_start
+                compute_seconds_per_iter = total_compute_time / iters_after_start
+                eval_seconds_per_iter = total_eval_time / iters_after_start
+                total_seconds_per_iter = (time.perf_counter() - start_time) / iters_after_start
+
+                if is_main_process() and (idx >= num_warmup * 2 or compute_seconds_per_iter > 5):
+                    eta = datetime.timedelta(seconds=int(total_seconds_per_iter * (total - idx - 1)))
+                    log_every_n_seconds(
+                        logging.INFO,
+                        (
+                            f"Task {label}. "
+                            f"Inference done {idx + 1}/{total}. "
+                            f"Dataloading: {data_seconds_per_iter:.4f} s/iter. "
+                            f"Inference: {compute_seconds_per_iter:.4f} s/iter. "
+                            f"Eval: {eval_seconds_per_iter:.4f} s/iter. "
+                            f"Total: {total_seconds_per_iter:.4f} s/iter. "
+                            f"ETA={eta}"
+                        ),
+                        n=5,
+                    )
                 start_data_time = time.perf_counter()
-                
-                for idx, batch in enumerate(eval_batch_gen):
-                    total_data_time += time.perf_counter() - start_data_time
-                    if idx == num_warmup:
-                        start_time = time.perf_counter()
-                        total_data_time = 0
-                        total_compute_time = 0
-                        total_eval_time = 0
 
-                    start_compute_time = time.perf_counter()
-                    batch = move_batch_to_device(batch, self._opt['device'])
-                    if self._opt['FP16']:
-                        # in FP16 mode, DeepSpeed casts the model to FP16, so the input needs to be manually casted to FP16
-                        batch = cast_batch_to_half(batch)
+        results = self.evaluator.evaluate()
+        model.model.sem_seg_head.predictor.lang_encoder.reset_text_embeddings()
 
-                    outputs = model(batch, mode=eval_type)
-                    if torch.cuda.is_available():
-                        torch.cuda.synchronize()
+        if is_main_process():
+            scores["{}/{}".format(dataset_label, eval_type)] = results
 
-                    total_compute_time += time.perf_counter() - start_compute_time
-                    start_eval_time = time.perf_counter()
-
-                    self.evaluator.process(batch, outputs)
-                    total_eval_time += time.perf_counter() - start_eval_time
-
-                    iters_after_start = idx + 1 - num_warmup * int(idx >= num_warmup)
-                    data_seconds_per_iter = total_data_time / iters_after_start
-                    compute_seconds_per_iter = total_compute_time / iters_after_start
-                    eval_seconds_per_iter = total_eval_time / iters_after_start
-                    total_seconds_per_iter = (time.perf_counter() - start_time) / iters_after_start
-
-                    if is_main_process()  and (idx >= num_warmup * 2 or compute_seconds_per_iter > 5):
-                        eta = datetime.timedelta(seconds=int(total_seconds_per_iter * (total - idx - 1)))
-                        log_every_n_seconds(
-                            logging.INFO,
-                            (
-                                f"Task {dataset_label}. "
-                                f"Inference done {idx + 1}/{total}. "
-                                f"Dataloading: {data_seconds_per_iter:.4f} s/iter. "
-                                f"Inference: {compute_seconds_per_iter:.4f} s/iter. "
-                                f"Eval: {eval_seconds_per_iter:.4f} s/iter. "
-                                f"Total: {total_seconds_per_iter:.4f} s/iter. "
-                                f"ETA={eta}"
-                            ),
-                            n=5,
-                        )
-                    start_data_time = time.perf_counter()
-
-            results = self.evaluator.evaluate()
-            model.model.sem_seg_head.predictor.lang_encoder.reset_text_embeddings()
-
-            if is_main_process():
-                scores["{}/{}".format(dataset_label, eval_type)] = results
+        # remove score, get mask result
 
         # set back to training stat.
         model.model.sem_seg_head.num_classes = self._opt['MODEL']['ENCODER']['NUM_CLASSES']

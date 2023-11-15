@@ -171,6 +171,7 @@ def _test_loader_from_config(cfg, dataset_name, mapper=None):
     }
 
 
+# opt, name, mapper(name)
 @configurable(from_config=_test_loader_from_config)
 def build_detection_test_loader(
     dataset: Union[List[Any], torchdata.Dataset],
@@ -420,6 +421,9 @@ def build_eval_dataloader(cfg, ):
             mapper = None
         dataloaders += [build_detection_test_loader(cfg, dataset_name, mapper=mapper)]
     return dataloaders
+
+
+    # dataloader = build_detection_test_loader(self._opt, 'imagenet_val', mapper=ImageNetDatasetMapper(sefl._opt, False))
 
 
 def build_train_dataloader(cfg, ):
