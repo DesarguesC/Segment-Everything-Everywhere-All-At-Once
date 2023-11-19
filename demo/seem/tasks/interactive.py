@@ -205,6 +205,7 @@ def interactive_infer_video(model, audio_model, image, tasks, refimg=None, reftx
         # Build the FFmpeg command
         ffmpeg_cmd = "ffmpeg -i {} -vf \"fps=5\" {}/%04d.png".format(video_pth, input_dir)
         os.system(ffmpeg_cmd)
+        # video2img
 
         data = {}
         model.model.task_switch['visual'] = True
