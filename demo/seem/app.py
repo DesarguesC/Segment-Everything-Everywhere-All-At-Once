@@ -5,6 +5,9 @@
 # Written by Xueyan Zou (xueyan@cs.wisc.edu), Jianwei Yang (jianwyan@microsoft.com)
 # --------------------------------------------------------
 
+def p(x):
+    print(x)
+
 p(-1)
 
 import os
@@ -31,8 +34,7 @@ from utils.constants import COCO_PANOPTIC_CLASSES
 
 from demo.seem.tasks import *
 
-def p(x):
-    print(x)
+
 
 
 def parse_option():
