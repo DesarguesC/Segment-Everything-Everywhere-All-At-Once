@@ -4,8 +4,11 @@
 # Licensed under The MIT License [see LICENSE for details]
 # Written by Xueyan Zou (xueyan@cs.wisc.edu), Jianwei Yang (jianwyan@microsoft.com)
 # --------------------------------------------------------
-
 import os
+import sys
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+
 import warnings
 import PIL
 from PIL import Image
