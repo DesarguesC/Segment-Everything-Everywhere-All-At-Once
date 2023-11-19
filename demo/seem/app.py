@@ -4,10 +4,15 @@
 # Licensed under The MIT License [see LICENSE for details]
 # Written by Xueyan Zou (xueyan@cs.wisc.edu), Jianwei Yang (jianwyan@microsoft.com)
 # --------------------------------------------------------
-import os
-import sys
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
+def p(x):
+    print(x)
+
+p(-1)
+
+import os
+
+p(0)
 
 import warnings
 import PIL
@@ -29,6 +34,9 @@ from utils.constants import COCO_PANOPTIC_CLASSES
 
 from demo.seem.tasks import *
 
+
+
+
 def parse_option():
     parser = argparse.ArgumentParser('SEEM Demo', add_help=False)
     parser.add_argument('--conf_files', default="configs/seem/focall_unicl_lang_demo.yaml", metavar="FILE", help='path to config file', )
@@ -38,9 +46,14 @@ def parse_option():
 '''
 build args
 '''
+
+p(1)
+
 cfg = parse_option()
 opt = load_opt_from_config_files([cfg.conf_files])
 opt = init_distributed(opt)
+
+p(2)
 
 # META DATA
 cur_model = 'None'
@@ -61,7 +74,8 @@ build model
 model = BaseModel(opt, build_model(opt)).from_pretrained(pretrained_pth).eval().cuda()
 with torch.no_grad():
     model.model.sem_seg_head.predictor.lang_encoder.get_text_embeddings(COCO_PANOPTIC_CLASSES + ["background"], is_eval=True)
-
+p(3)
+    
 '''
 audio
 '''
@@ -161,3 +175,5 @@ gr.Interface(
     allow_flagging='never',
     cache_examples=False,
 ).launch(share=True)
+
+
