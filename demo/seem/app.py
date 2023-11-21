@@ -5,6 +5,11 @@
 # Written by Xueyan Zou (xueyan@cs.wisc.edu), Jianwei Yang (jianwyan@microsoft.com)
 # --------------------------------------------------------
 
+import sys
+print(sys.path)
+sys.path.append('/root/seem')
+print(sys.path)
+
 def p(x):
     print(x)
 
