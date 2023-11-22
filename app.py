@@ -5,6 +5,10 @@
 # Written by Xueyan Zou (xueyan@cs.wisc.edu), Jianwei Yang (jianwyan@microsoft.com)
 # --------------------------------------------------------
 
+import os, sys
+sys.path.append('~/seem/')
+os.chdir('./')
+
 def p(x):
     print(x)
 
