@@ -1,7 +1,7 @@
 import os
 import logging
 print('111')
-import torch
+import t
 print('000')
 import torch.nn as nn
 print('000')
