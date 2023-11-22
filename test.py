@@ -21,10 +21,10 @@ def parse_option():
     parser.add_argument('--in_dir', default='../autodl-tmp/assets/inputs/1.jpg', help='path to input image file')
     parser.add_argument('--out_dir', default='../autodl-tmp/assets/outputs', help='path to output image file')
     parser.add_argument('--name', default='1.jpg', help='output image name')
+    parser.add_argument('--reftxt', default='everything', help='prompts')
 
     cfg = parser.parse_args()
     return cfg
-
 
 
 cfg = parse_option()
@@ -46,7 +46,9 @@ with torch.no_grad():
 # audio_model = whisper.load_model('base')
 # audio model => useless in my project?
 
-img_pil, _ = interactive_infer_image(model, None, Image.open(opt.in_dir), ['Text'], )
 
-opt.name = opt.in_dir.spilit('/')[-1] if opt.name == None else opt.name
-img_pil.save(opt.name)
+img_pil, _ = interactive_infer_image(model, None, Image.open(cfg.in_dir), ['Text'], None, cfg.reftxt, None, None)
+
+
+cfg.name = cfg.in_dir.spilit('/')[-1] if cfg.name == None else cfg.name
+img_pil.save(os.path.join(cfg.out_dir, cfg.name))
