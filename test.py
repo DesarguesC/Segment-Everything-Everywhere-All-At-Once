@@ -18,8 +18,8 @@ def parse_option():
     parser = argparse.ArgumentParser('SEEM Demo', add_help=False)
     parser.add_argument('--conf_files', default="configs/seem/focall_unicl_lang_demo.yaml", help='path to config file', )
     # set as default
-    parser.add_argument('--in_dir', default='../autodl-tmp/assets/input/1.jpg', help='path to input image file')
-    parser.add_argument('--out_dir', default='../autodl-tmp/assets/output', help='path to output image file')
+    parser.add_argument('--in_dir', default='../autodl-tmp/assets/inputs/1.jpg', help='path to input image file')
+    parser.add_argument('--out_dir', default='../autodl-tmp/assets/outputs', help='path to output image file')
     parser.add_argument('--name', default='1.jpg', help='output image name')
 
     cfg = parser.parse_args()
@@ -43,10 +43,10 @@ with torch.no_grad():
     model.model.sem_seg_head.predictor.lang_encoder.get_text_embeddings(COCO_PANOPTIC_CLASSES + ["background"], is_eval=True)
 # label
 
-audio_model = whisper.load_model('base')
+# audio_model = whisper.load_model('base')
 # audio model => useless in my project?
 
-img_pil, _ = interactive_infer_image(model, audio_model, Image.open(opt.in_dir), ['Text'], )
+img_pil, _ = interactive_infer_image(model, None, Image.open(opt.in_dir), ['Text'], )
 
 opt.name = opt.in_dir.spilit('/')[-1] if opt.name == None else opt.name
 img_pil.save(opt.name)
