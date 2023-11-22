@@ -33,8 +33,8 @@ all_classes = [name.replace('-other','').replace('-merged','') for name in COCO_
 colors_list = [(np.array(color['color'])/255).tolist() for color in COCO_CATEGORIES] + [[1, 1, 1]]
 # Deformable Transformer Encoder is not available.
 def interactive_infer_image(model, audio_model, image, tasks, refimg=None, reftxt=None, audio_pth=None, video_pth=None):
-    image_ori = transform(image['image'])
-    mask_ori = image['mask']
+    image_ori = transform(image['image'] if 'Stroke' in tasks else image)
+    mask_ori = image['mask'] if 'Stroke' in tasks else None
     width = image_ori.size[0]
     height = image_ori.size[1]
     print(1)

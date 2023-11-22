@@ -1,0 +1,52 @@
+import os, sys, torch
+import numpy as np
+import argparse
+import whisper
+from PIL import Image
+import cv2
+
+print(1)
+from modeling.BaseModel import BaseModel
+print(2)
+
+from modeling import build_model
+from utils.distributed import init_distributed
+from utils.arguments import load_opt_from_config_files
+from utils.constants import COCO_PANOPTIC_CLASSES
+
+from demo.seem.tasks import *
+
+
+def parse_option():
+    parser = argparse.ArgumentParser('SEEM Demo', add_help=False)
+    parser.add_argument('--conf_files', default="configs/seem/focall_unicl_lang_demo.yaml", help='path to config file', )
+    # set as default
+    parser.add_argument('--in_dir', default='../autodl-tmp/assets/input/1.jpg', help='path to input image file')
+    parser.add_argument('--out_dir', default='../autodl-tmp/assets/output', help='path to output image file')
+    parser.add_argument('--name', default='1.jpg', help='output image name')
+
+    cfg = parser.parse_args()
+    return cfg
+
+
+
+
+cfg = parse_option()
+opt = load_opt_from_config_files([cfg.conf_files])
+opt = init_distributed(opt)
+
+pretrained_pth = '../autodl-tmp/seem_focall_v0.pt'
+model = BaseModel(opt, build_model(opt)).from_pretrained(pretrained_pth).eval().cuda()
+# seem base model
+
+with torch.no_grad():
+    model.model.sem_seg_head.predictor.lang_encoder.get_text_embeddings(COCO_PANOPTIC_CLASSES + ["background"], is_eval=True)
+# label
+
+audio_model = whisper.load_model('base')
+# audio model => useless in my project?
+
+img_pil, _ = interactive_infer_image(model, audio_model, Image.open(opt.in_dir), ['Text'], )
+
+opt.name = opt.in_dir.spilit('/')[-1] if opt.name == None else opt.name
+img_pil.save(opt.name)
