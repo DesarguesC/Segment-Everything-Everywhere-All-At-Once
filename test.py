@@ -52,3 +52,5 @@ img_pil, _ = interactive_infer_image(model, None, Image.open(cfg.in_dir), ['Text
 
 cfg.name = cfg.in_dir.spilit('/')[-1] if cfg.name == None else cfg.name
 img_pil.save(os.path.join(cfg.out_dir, cfg.name))
+
+# SEEM failed to understand the meaning of the number
