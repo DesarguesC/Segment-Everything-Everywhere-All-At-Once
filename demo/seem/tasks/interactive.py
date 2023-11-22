@@ -116,6 +116,7 @@ def interactive_infer_image(model, audio_model, image, tasks, refimg=None, reftx
         return Image.fromarray(res), None
     else:
         results,image_size,extra = model.model.evaluate_demo(batch_inputs)
+        # model.model: from build_model
 
     # If contians spatial use spatial:
     if 'Stroke' in tasks:

@@ -46,7 +46,7 @@ with torch.no_grad():
 audio_model = whisper.load_model('base')
 # audio model => useless in my project?
 
-img_pil, _ = interactive_infer_image(model, audio_model, Image.open(opt.in_dir), ['Text'], )
+img_pil, _ = interactive_infer_image(model, audio_model, Image.open(opt['in_dir']), ['Text'], )
 
-opt.name = opt.in_dir.spilit('/')[-1] if opt.name == None else opt.name
-img_pil.save(opt.name)
+opt.name = opt['in_dir'].spilit('/')[-1] if opt['name'] == None else opt['name']
+img_pil.save(opt['name'])
