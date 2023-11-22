@@ -4,8 +4,11 @@ import torch
 import pickle
 import subprocess
 
+print('here')
 from mpi4py import MPI
+print('?'*10)
 import torch.distributed as dist
+
 
 
 def apply_distributed(opt):

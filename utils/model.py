@@ -4,8 +4,7 @@ import time
 import pickle
 import torch
 import torch.nn as nn
-
-from utils.distributed import is_main_process
+# from utils.distributed import is_main_process
 
 logger = logging.getLogger(__name__)
 
@@ -48,13 +47,13 @@ def align_and_update_state_dicts(model_state_dict, ckpt_state_dict):
         else:
             unloaded_log.append("*UNLOADED* {}, Model Shape: {}".format(model_key, model_weight.shape))
             
-    if is_main_process():
-        for info in matched_log:
-            logger.info(info)
-        for info in unloaded_log:
-            logger.warning(info)
-        for key in ckpt_keys:
-            logger.warning("$UNUSED$ {}, Ckpt Shape: {}".format(key, ckpt_state_dict[key].shape))
-        for info in unmatched_log:
-            logger.warning(info)
+    # if is_main_process():
+    #     for info in matched_log:
+    #         logger.info(info)
+    #     for info in unloaded_log:
+    #         logger.warning(info)
+    #     for key in ckpt_keys:
+    #         logger.warning("$UNUSED$ {}, Ckpt Shape: {}".format(key, ckpt_state_dict[key].shape))
+    #     for info in unmatched_log:
+    #         logger.warning(info)
     return result_dicts

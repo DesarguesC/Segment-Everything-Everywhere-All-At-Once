@@ -5,12 +5,9 @@ import whisper
 from PIL import Image
 import cv2
 
-print(1)
 from modeling.BaseModel import BaseModel
-print(2)
-
 from modeling import build_model
-from utils.distributed import init_distributed
+# from utils.distributed import init_distributed
 from utils.arguments import load_opt_from_config_files
 from utils.constants import COCO_PANOPTIC_CLASSES
 
@@ -30,10 +27,13 @@ def parse_option():
 
 
 
-
 cfg = parse_option()
-opt = load_opt_from_config_files([cfg.conf_files])
-opt = init_distributed(opt)
+opt = load_opt_from_config_files([cfg.conf_files]) # opt -> dict
+# opt = init_distributed(opt)
+
+if 'device' not in opt.keys():
+    opt['device'] = 'cuda' if torch.cuda.is_available() else 'cpu'
+
 
 pretrained_pth = '../autodl-tmp/seem_focall_v0.pt'
 model = BaseModel(opt, build_model(opt)).from_pretrained(pretrained_pth).eval().cuda()

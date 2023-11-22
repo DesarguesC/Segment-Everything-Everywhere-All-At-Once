@@ -1,6 +1,5 @@
 _model_entrypoints = {}
 
-
 def build_model(config, **kwargs):
     model_name = config['MODEL']['NAME']
 
