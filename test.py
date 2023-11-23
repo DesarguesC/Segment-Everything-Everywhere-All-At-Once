@@ -45,19 +45,25 @@ with torch.no_grad():
     model.model.sem_seg_head.predictor.lang_encoder.get_text_embeddings(COCO_PANOPTIC_CLASSES + ["background"], is_eval=True)
 # label
 
-# audio_model = whisper.load_model('base')
-# audio model => useless in my project?
 
+cfg.name = cfg.in_dir.spilit('/')[-1] if cfg.name == None else cfg.name
 
 img_pil, masks = interactive_infer_image(model, None, Image.open(cfg.in_dir), ['Text', 'Panoptic'] if cfg.p==1 else ['Text'], None, cfg.reftxt, None, None)
-print(f'raw shape = {img_pil.shape}')
-turn = lambda x: repeat(rearrange(x, 'c h w -> h w c'), '... 1 -> ... b', b=3)
-xx = img_pil * (1.-turn(masks))
-print(type(xx))
-print(xx.shape)
-img_pil = Image.fromarray(xx)
-cfg.name = cfg.in_dir.spilit('/')[-1] if cfg.name == None else cfg.name
-img_pil.save(os.path.join(cfg.out_dir, cfg.name))
+tmp = Image.fromarray(img_pil)
+tmp.save(os.path.join(cfg.out_dir, cfg.name))
+
+
+
+# print(f'raw shape = {img_pil.shape}')
+# turn = lambda x: repeat(rearrange(x, 'c h w -> h w c'), '... 1 -> ... b', b=3)
+# xx = img_pil * (1.-turn(masks))
+# print(type(xx))
+# print(xx.shape)
+# img_pil = Image.fromarray(xx)
+
+
+
+# img_pil.save(os.path.join(cfg.out_dir, cfg.name))
 
 
 # SEEM failed to understand the meaning of the number
