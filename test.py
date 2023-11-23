@@ -16,12 +16,13 @@ from demo.seem.tasks import *
 
 def parse_option():
     parser = argparse.ArgumentParser('SEEM Demo', add_help=False)
-    parser.add_argument('--conf_files', default="configs/seem/focall_unicl_lang_demo.yaml", help='path to config file', )
+    parser.add_argument('--conf_files', default="configs/seem/focall_unicl_lang_demo.yaml", type=str, help='path to config file', )
     # set as default
-    parser.add_argument('--in_dir', default='../autodl-tmp/assets/inputs/1.jpg', help='path to input image file')
-    parser.add_argument('--out_dir', default='../autodl-tmp/assets/outputs', help='path to output image file')
-    parser.add_argument('--name', default='1.jpg', help='output image name')
+    parser.add_argument('--in_dir', default='../autodl-tmp/assets/inputs/1.jpg', type=str, help='path to input image file')
+    parser.add_argument('--out_dir', default='../autodl-tmp/assets/outputs', type=str, help='path to output image file')
+    parser.add_argument('--name', default=None, type=str, help='output image name')
     parser.add_argument('--reftxt', default='everything', help='prompts')
+    parser.add_argument('--p', default=1, type=int, help='whether to use panoptic')
 
     cfg = parser.parse_args()
     return cfg
@@ -47,7 +48,7 @@ with torch.no_grad():
 # audio model => useless in my project?
 
 
-img_pil, _ = interactive_infer_image(model, None, Image.open(cfg.in_dir), ['Text'], None, cfg.reftxt, None, None)
+img_pil, _ = interactive_infer_image(model, None, Image.open(cfg.in_dir), ['Text', 'Panoptic'] if cfg.p==1 else ['Text'], None, cfg.reftxt, None, None)
 
 
 cfg.name = cfg.in_dir.spilit('/')[-1] if cfg.name == None else cfg.name
