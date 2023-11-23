@@ -157,6 +157,10 @@ def interactive_infer_image(model, audio_model, image, tasks, refimg=None, reftx
         matched_id = out_prob.max(0)[1]
         pred_masks_pos = pred_masks[matched_id,:,:]
         pred_class = results['pred_logits'][0][matched_id].max(dim=-1)[1]
+        
+        print(type(v_emb), type(t_emb), matched_id, out_prob.max(0))
+        print(f'out_prob.shape = {out_prob.shape}')
+        print(f'pred_masks_pos.shape = {pred_masks_pos.shape}')
 
     elif 'Audio' in tasks:
         pred_masks = results['pred_masks'][0]
@@ -174,8 +178,12 @@ def interactive_infer_image(model, audio_model, image, tasks, refimg=None, reftx
         pred_class = results['pred_logits'][0][matched_id].max(dim=-1)[1]
 
     # interpolate mask to ori size
+    # ori_ = pred_masks_pos
     pred_masks_pos = (F.interpolate(pred_masks_pos[None,], image_size[-2:], mode='bilinear')[0,:,:data['height'],:data['width']] > 0.0).float().cpu().numpy()
     texts = [all_classes[pred_class[0]]]
+    print(texts)
+    print(type(pred_masks_pos), pred_masks_pos.shape)
+    print(f'mask: {pred_masks_pos}')
 
     for idx, mask in enumerate(pred_masks_pos):
         # color = random_color(rgb=True, maximum=1).astype(np.int32).tolist()
@@ -184,7 +192,8 @@ def interactive_infer_image(model, audio_model, image, tasks, refimg=None, reftx
     res = demo.get_image()
     torch.cuda.empty_cache()
     # return Image.fromarray(res), stroke_inimg, stroke_refimg
-    return Image.fromarray(res), None
+    # return Image.fromarray(res), None
+    return res, pred_masks_pos
 
 def interactive_infer_video(model, audio_model, image, tasks, refimg=None, reftxt=None, audio_pth=None, video_pth=None):
     if 'Video' in tasks:

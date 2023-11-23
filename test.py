@@ -4,6 +4,7 @@ import argparse
 import whisper
 from PIL import Image
 import cv2
+from einops import repeat, rearrange
 
 from modeling.BaseModel import BaseModel
 from modeling import build_model
@@ -48,10 +49,15 @@ with torch.no_grad():
 # audio model => useless in my project?
 
 
-img_pil, _ = interactive_infer_image(model, None, Image.open(cfg.in_dir), ['Text', 'Panoptic'] if cfg.p==1 else ['Text'], None, cfg.reftxt, None, None)
-
-
+img_pil, masks = interactive_infer_image(model, None, Image.open(cfg.in_dir), ['Text', 'Panoptic'] if cfg.p==1 else ['Text'], None, cfg.reftxt, None, None)
+print(f'raw shape = {img_pil.shape}')
+turn = lambda x: repeat(rearrange(x, 'c h w -> h w c'), '... 1 -> ... b', b=3)
+xx = img_pil * (1.-turn(masks))
+print(type(xx))
+print(xx.shape)
+img_pil = Image.fromarray(xx)
 cfg.name = cfg.in_dir.spilit('/')[-1] if cfg.name == None else cfg.name
 img_pil.save(os.path.join(cfg.out_dir, cfg.name))
+
 
 # SEEM failed to understand the meaning of the number
